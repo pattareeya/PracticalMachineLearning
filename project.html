@@ -238,7 +238,7 @@ Train_data2 &lt;- Train_data1[,which(data_NAs == 0)]
 
 <h2>Model Selection and Creation</h2>
 
-<p>Next we will create training set and test set in the ratio of 75:25.</p>
+<p>Next we will create training set and cross validation set in the ratio of 75:25.</p>
 
 <pre><code class="r">inTrain &lt;- createDataPartition(Train_data2$classe, p = 0.75,list = FALSE)
 Training &lt;- Train_data2[inTrain,]

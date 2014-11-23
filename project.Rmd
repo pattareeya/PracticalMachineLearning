@@ -52,7 +52,7 @@ We will skip on creating the plot because of too many predictors.
 ## Model Selection and Creation
 
 
-Next we will create training set and test set in the ratio of 75:25.
+Next we will create training set and cross validation set in the ratio of 75:25.
 
 ```{r}
 inTrain <- createDataPartition(Train_data2$classe, p = 0.75,list = FALSE)
