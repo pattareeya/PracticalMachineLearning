@@ -1,0 +1,111 @@
+Human Activity Recognition
+========================================================
+## Executive Summary
+
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants to predict the manner in which they did the exercise.
+
+
+## Data Loading and Processing
+
+
+We obtain the training data from https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv and test data from https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+```{r}
+#Loading required packages
+library(ggplot2)
+library(caret)
+```
+
+```{r,cache=TRUE}
+fileUrl1 <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+fileUrl2 <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+download.file(fileUrl1, destfile = "training.csv")
+download.file(fileUrl2, destfile = "testing.csv")
+dateDownloaded <- date()
+Train_data <- read.csv("training.csv", na.strings = c("NA", "", " "))
+Test_data <- read.csv("testing.csv", na.strings = c("NA", "", " "))
+```
+
+
+Columns 1 to 7 contain unrelated predictor and remove the columns which contains NAs. Since there are a lot of NAs (more than half) on many variables, we will eliminate those variables.
+
+```{r}
+set.seed(1234)
+Train_data1 <- Train_data[,-(1:7)]
+data_NAs <- apply(Train_data1, 2, function(x) {sum(is.na(x))})
+Train_data2 <- Train_data1[,which(data_NAs == 0)]
+
+```
+## Exploratory Analysis
+
+
+After cleaning the data set, there still are a lot of variables for this data set as shown below:
+
+```{r}
+dim(Train_data2)
+```
+
+
+We will skip on creating the plot because of too many predictors.
+
+## Model Selection and Creation
+
+
+Next we will create training set and test set in the ratio of 75:25.
+
+```{r}
+inTrain <- createDataPartition(Train_data2$classe, p = 0.75,list = FALSE)
+Training <- Train_data2[inTrain,]
+CrossVal <- Train_data2[-inTrain,]
+```
+
+
+Since this is the classification prediction. We will use random Forest algorithm due to the accuracy eventhough it will take longer to produce the result. It also uses the bagging approach and less likely to overfit the model.
+
+```{r}
+library(randomForest)
+modFit <- randomForest(classe ~. , data = Training)
+modFit
+```
+
+
+From this training set, the OOB (Out-of-Bag) estimate of error rate is 0.43% which is very small error rate. Then we can proceed with the test set.
+
+## Cross Validation
+
+
+In this section, we apply the same model to the cross validation set and create the confusion matrix to see how accurate the model is.
+
+```{r}
+# crossvalidate the model using the remaining 25% of data
+predictMod <- predict(modFit, CrossVal)
+confusionMatrix(CrossVal$classe, predictMod)
+```
+
+
+It shows that the model has 99.6% accuracy
+
+## Prediction
+
+
+Now we will test the testing data set which is in a separare file and we will do the same data cleaning as we did with Training data set.
+
+```{r}
+Test_data1 <- Test_data[,-(1:7)]
+Test_data2 <- Test_data1[,which(data_NAs == 0)]
+```
+
+
+Now we predict the testing data set.
+
+```{r}
+predictMod2 <- predict(modFit, Test_data2)
+predictMod2
+```
+
+
+## Conclusion
+
+
+The training data is large enough to be able to create the accurate prediction model where it shows 99.6% accuracy in this case.
